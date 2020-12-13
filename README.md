@@ -9,5 +9,5 @@ The results of the models are kept in their respective output folders.
 
 ```
 python gan_final.py
-pythin run_vae.py
+python run_vae.py
 ```
