@@ -42,11 +42,8 @@ def make_generator_model():
 
     return model
 
-# generate random image
 generator = make_generator_model()
 generator.summary()
-noise = tf.random.normal([1, 100])
-generated_image = generator(noise, training=False)
 
 plt.imshow(generated_image[0, :, :, 0], cmap='gray_r')
 
@@ -67,8 +64,8 @@ def make_discriminator_model():
     return model
 
 discriminator = make_discriminator_model()
-decision = discriminator(generated_image)
-print (decision)
+output = discriminator(generated_image)
+print (output)
 discriminator.summary()
 
 # define loss function
