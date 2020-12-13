@@ -8,6 +8,19 @@ import time
 
 train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
 
+
+# compute discriminator loss
+def calc_disc_loss(real_output, fake_output):
+    real_loss = cross_entropy(tf.ones_like(real_output), real_output)
+    fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+    total_loss = real_loss + fake_loss
+    return total_loss
+
+
+# compute generator loss
+def calc_gen_loss(fake_output):
+    return cross_entropy(tf.ones_like(fake_output), fake_output)
+
 def define_generator():
     model = tf.keras.Sequential()
     model.add(layers.Dense(7 * 7 * 256, use_bias=False, input_shape=(100,)))
@@ -28,11 +41,6 @@ def define_generator():
 
     return model
 
-
-generator = define_generator()
-generator.summary()
-
-
 def define_discriminator():
     model = tf.keras.Sequential()
     model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
@@ -48,26 +56,6 @@ def define_discriminator():
     model.add(layers.Dense(1))
 
     return model
-
-
-discriminator = define_discriminator()
-discriminator.summary()
-
-# define loss function
-cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-
-
-# compute discriminator loss
-def calc_disc_loss(real_output, fake_output):
-    real_loss = cross_entropy(tf.ones_like(real_output), real_output)
-    fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
-    total_loss = real_loss + fake_loss
-    return total_loss
-
-
-# compute generator loss
-def calc_gen_loss(fake_output):
-    return cross_entropy(tf.ones_like(fake_output), fake_output)
 
 # take a training step, calculate loss and update weights
 @tf.function
@@ -128,8 +116,6 @@ def display_image(epoch_no):
     return PIL.Image.open('image_at_epoch_{:04d}.png'.format(epoch_no))
 
 
-
-
 if __name__ == '__main__':
 
     EPOCHS = 50
@@ -151,5 +137,19 @@ if __name__ == '__main__':
     # Batch and shuffle the data
     train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 
+    # init loss function
+    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+
+    # initialize generator
+    generator = define_generator()
+    generator.summary()
+
+    # initialize discriminator
+    discriminator = define_discriminator()
+    discriminator.summary()
+
+    # train the models
     train(train_dataset, EPOCHS)
+
+    # display the output images
     display_image(EPOCHS)
